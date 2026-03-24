@@ -11,9 +11,19 @@ import {
   REGISTER,
 } from "redux-persist";
 
-// =============================
-// ASYNC STORAGE (PROMISE-BASED)
-// =============================
+import { categoriesAPI } from "../features/Categories/categoriesApi"; // ✅ Categories API
+import { promotionAPI } from "../features/Promotion/promotionsApi"; // ✅ Promotions API
+import { productsAPI } from "../features/Products/productsAPi"; // ✅ Products API
+import { salesAPI } from "../features/sales/salesAPi"; // ✅ Sales API
+import { paymentsAPI } from "../features/Payments/paymentsApi"; // ✅ Payments API
+import { deliveryAPI } from "../features/Delivery/deliveryAPi"; // ✅ Delivery API
+
+// ⬇ Cart Slice
+import cartReducer from "../app/cart/cartSlice";
+
+/* =============================
+   ASYNC STORAGE (PROMISE BASED)
+============================= */
 const asyncLocalStorage = {
   getItem: (key: string) => Promise.resolve(localStorage.getItem(key)),
   setItem: (key: string, value: string) =>
@@ -21,45 +31,62 @@ const asyncLocalStorage = {
   removeItem: (key: string) => Promise.resolve(localStorage.removeItem(key)),
 };
 
-// =============================
-// ROOT REDUCER
-// =============================
+/* =============================
+   ROOT REDUCER
+============================= */
 const rootReducer = combineReducers({
-  // Add your slices here later
+  // RTK Query APIs
+  [categoriesAPI.reducerPath]: categoriesAPI.reducer,
+  [promotionAPI.reducerPath]: promotionAPI.reducer,
+  [productsAPI.reducerPath]: productsAPI.reducer,
+  [salesAPI.reducerPath]: salesAPI.reducer,
+  [paymentsAPI.reducerPath]: paymentsAPI.reducer,
+  [deliveryAPI.reducerPath]: deliveryAPI.reducer, // ✅ Added delivery API
+
+  // Slices
+  cart: cartReducer,
 });
 
-// =============================
-// PERSIST CONFIG
-// =============================
+/* =============================
+   PERSIST CONFIG
+============================= */
 const persistConfig = {
   key: "root",
   version: 1,
   storage: asyncLocalStorage,
-  whitelist: [], // Add slice keys here to persist them
+  whitelist: ["cart"], // ✅ Persist cart only
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-// =============================
-// STORE
-// =============================
+/* =============================
+   STORE
+============================= */
 export const store = configureStore({
   reducer: persistedReducer,
+
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }),
+    }).concat(
+      categoriesAPI.middleware,
+      promotionAPI.middleware,
+      productsAPI.middleware,
+      salesAPI.middleware,
+      paymentsAPI.middleware,
+      deliveryAPI.middleware // ✅ Added delivery middleware
+    ),
 });
 
-// =============================
-// PERSISTOR
-// =============================
+/* =============================
+   PERSISTOR
+============================= */
 export const persistedStore = persistStore(store);
 
-// =============================
-// TYPES
-// =============================
+/* =============================
+   TYPES
+============================= */
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

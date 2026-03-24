@@ -1,35 +1,79 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.tsx
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from "sonner";
+
+/* =============================
+   CONTEXTS
+============================= */
+import { CartProvider } from "./Context/cartContext";
+
+/* =============================
+   PUBLIC PAGES
+============================= */
+import LandingPage from "./Pages/LandingPage/Landingpage";
+import Products from "./components/dashboard/Products/products";
+import ProductCard from "./components/dashboard/Products/productsCard";
+import Category from "./components/dashboard/Category/category";
+import ShopProducts from "./components/UserDashboard/Quickshop/products";
+
+/* =============================
+   DASHBOARD PAGES
+============================= */
+import UserDashboard from "./components/UserDashboard/UserDashboard";
+import CartPage from "./components/UserDashboard/Cart/cartPage";
+import DeliveryMethod from "./components/UserDashboard/Delivery/deliverymethod"; // ✅ Updated component
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <CartProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* ===== DEFAULT LANDING PAGE ===== */}
+          <Route path="/" element={<LandingPage />} />
+
+          {/* ===== PRODUCTS ===== */}
+          <Route path="/products" element={<Products />} />
+          <Route path="/product/:id" element={<ProductCard />} />
+
+          {/* ===== CATEGORY ===== */}
+          <Route path="/categories" element={<Category />} />
+
+          {/* ===== DASHBOARD ===== */}
+          <Route path="/dashboard" element={<UserDashboard />}>
+            {/* Nested dashboard routes */}
+            <Route path="shop" element={<ShopProducts />} />
+            <Route path="cart" element={<CartPage />} />
+            {/* Add more nested dashboard routes here */}
+          </Route>
+
+          {/* ===== CHECKOUT / DELIVERY ===== */}
+          <Route path="/delivery-method" element={<DeliveryMethod />} />
+
+          {/* ===== FALLBACK 404 PAGE ===== */}
+          <Route
+            path="*"
+            element={
+              <div className="p-6 text-center text-xl text-red-500">
+                Page Not Found
+              </div>
+            }
+          />
+        </Routes>
+
+        {/* ===== TOASTER NOTIFICATIONS ===== */}
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            classNames: {
+              error: "bg-red-500 text-white",
+              success: "bg-green-500 text-white",
+              info: "bg-blue-500 text-white",
+            },
+          }}
+        />
+      </BrowserRouter>
+    </CartProvider>
+  );
 }
 
-export default App
+export default App;
